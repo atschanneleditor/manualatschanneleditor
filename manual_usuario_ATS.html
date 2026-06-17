@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — ATS Channel Editor v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
+  /* ─── VARIABLES & RESET ─────────────────────────────────── */
+  :root {
+    --cyan:    #00f5ff;
+    --violet:  #a855f7;
+    --pink:    #f472b6;
+    --blue:    #3b82f6;
+    --dark:    #030712;
+    --dark2:   #0a0f1e;
+    --glass-bg:   rgba(255,255,255,0.05);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-hover:  rgba(255,255,255,0.09);
+    --text:    #e2e8f0;
+    --muted:   #94a3b8;
+    --page-w:  210mm;
+    --page-h:  297mm;
+    --margin:  14mm;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+
+  /* ─── BODY / SCREEN VIEW ───────────────────────────────── */
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ─── A4 PAGE WRAPPER ───────────────────────────────────── */
+  .page {
+    width: var(--page-w);
+    min-height: var(--page-h);
+    margin: 20px auto;
+    padding: var(--margin);
+    background: linear-gradient(135deg, #050d1f 0%, #0a0f2e 50%, #050d1f 100%);
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    border: 1px solid rgba(0,245,255,.08);
+    box-shadow: 0 0 80px rgba(0,245,255,.06), 0 0 40px rgba(168,85,247,.04);
+  }
+
+  /* Grid lines background */
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,.03) 1px, transparent 1px);
+    background-size: 8mm 8mm;
+    pointer-events: none;
+  }
+
+  /* Top glow bar */
+  .page::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), var(--violet), transparent);
+  }
+
+  /* ─── COVER PAGE ─────────────────────────────────────────── */
+  .cover {
+    min-height: calc(var(--page-h) - 2 * var(--margin));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0;
+  }
+
+  .cover-logo-ring {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,245,255,.15), transparent 70%);
+    border: 2px solid rgba(0,245,255,.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(0,245,255,.2), inset 0 0 20px rgba(0,245,255,.05);
+    animation: pulse-ring 3s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%,100% { box-shadow: 0 0 30px rgba(0,245,255,.2), inset 0 0 20px rgba(0,245,255,.05); }
+    50%      { box-shadow: 0 0 50px rgba(0,245,255,.4), inset 0 0 30px rgba(0,245,255,.1); }
+  }
+
+  .cover-eyebrow {
+    font-family: 'Orbitron', monospace;
+    font-size: .6rem;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 10px;
+    opacity: .8;
+  }
+
+  .cover-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.2rem;
+    font-weight: 900;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 45%, var(--violet) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  .cover-subtitle {
+    font-size: .85rem;
+    color: var(--muted);
+    letter-spacing: .1em;
+    margin-bottom: 30px;
+  }
+
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    background: rgba(0,245,255,.08);
+    border: 1px solid rgba(0,245,255,.25);
+    font-family: 'Orbitron', monospace;
+    font-size: .65rem;
+    letter-spacing: .15em;
+    color: var(--cyan);
+    margin-bottom: 32px;
+  }
+
+  .cover-divider {
+    width: 120px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--violet), transparent);
+    margin: 0 auto 28px;
+  }
+
+  .cover-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 30px;
+  }
+
+  .cover-feature-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: left;
+    backdrop-filter: blur(10px);
+  }
+  .cover-feature-card .icon { font-size: 1.4rem; margin-bottom: 4px; display: block; }
+  .cover-feature-card strong {
+    font-family: 'Exo 2', sans-serif;
+    font-size: .72rem;
+    font-weight: 700;
+    color: #fff;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .cover-feature-card span { font-size: .65rem; color: var(--muted); }
+
+  .cover-footer {
+    font-size: .6rem;
+    color: rgba(148,163,184,.5);
+    letter-spacing: .1em;
+    margin-top: 10px;
+  }
+
+  /* ─── TABLE OF CONTENTS ─────────────────────────────────── */
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: .72rem;
+    transition: background .2s;
+  }
+  .toc-item:hover { background: var(--glass-hover); }
+  .toc-num {
+    font-family: 'Orbitron', monospace;
+    font-size: .58rem;
+    color: var(--cyan);
+    min-width: 20px;
+    font-weight: 700;
+  }
+  .toc-icon { font-size: 1rem; }
+  .toc-label { flex: 1; line-height: 1.3; }
+
+  /* ─── SECTION HEADINGS ──────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0,245,255,.15);
+  }
+  .section-icon-wrap {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0,245,255,.12), rgba(168,85,247,.12));
+    border: 1px solid rgba(0,245,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .95rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-tag {
+    font-family: 'Orbitron', monospace;
+    font-size: .5rem;
+    letter-spacing: .2em;
+    color: var(--violet);
+    background: rgba(168,85,247,.1);
+    border: 1px solid rgba(168,85,247,.2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: auto;
+  }
+
+  /* ─── PAGE HEADER (all pages except cover) ──────────────── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,245,255,.1);
+  }
+  .page-header-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .55rem;
+    letter-spacing: .25em;
+    color: var(--cyan);
+    opacity: .7;
+  }
+  .page-header-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: .55rem;
+    letter-spacing: .15em;
+    color: rgba(255,255,255,.3);
+  }
+
+  /* ─── PAGE FOOTER ───────────────────────────────────────── */
+  .page-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,245,255,.08);
+  }
+  .page-footer span {
+    font-size: .55rem;
+    color: rgba(148,163,184,.4);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: .1em;
+  }
+  .page-num { color: var(--cyan) !important; opacity: .6; }
+
+  /* ─── GLASS CARD ────────────────────────────────────────── */
+  .card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .card-title {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: .75rem;
+    color: var(--cyan);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 12px;
+    background: linear-gradient(180deg, var(--cyan), var(--violet));
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ─── STEP LIST ─────────────────────────────────────────── */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .steps li {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .step-num {
+    min-width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: .55rem;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text { font-size: .72rem; color: var(--text); line-height: 1.5; }
+  .step-text strong { color: var(--cyan); }
+
+  /* ─── INFO BOX ──────────────────────────────────────────── */
+  .info-box {
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: .7rem;
+    line-height: 1.5;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .info-box .box-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip    { background: rgba(0,245,255,.06); border: 1px solid rgba(0,245,255,.2); color: #a5f3fc; }
+  .info-box.warn   { background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2); color: #fde68a; }
+  .info-box.danger { background: rgba(239,68,68,.06);  border: 1px solid rgba(239,68,68,.2);  color: #fca5a5; }
+
+  /* ─── TABLE ─────────────────────────────────────────────── */
+  .glass-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .68rem;
+    margin-bottom: 12px;
+  }
+  .glass-table thead tr {
+    background: linear-gradient(90deg, rgba(0,245,255,.1), rgba(168,85,247,.1));
+    border-bottom: 1px solid rgba(0,245,255,.2);
+  }
+  .glass-table th {
+    padding: 7px 10px;
+    text-align: left;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: .05em;
+    font-size: .65rem;
+  }
+  .glass-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .glass-table tr:hover td { background: rgba(255,255,255,.02); }
+  .glass-table .check { color: #34d399; font-size: .85rem; }
+  .glass-table .cross { color: #f87171; font-size: .85rem; }
+  .glass-table .plan-name { font-weight: 700; color: #fff; }
+  .glass-table .price { color: var(--cyan); font-family: 'Orbitron', monospace; font-size: .62rem; font-weight: 700; }
+
+  /* ─── FLOW DIAGRAM ──────────────────────────────────────── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .flow-node {
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: .65rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .flow-node.start  { background: rgba(0,245,255,.12); border: 1px solid rgba(0,245,255,.3); color: var(--cyan); }
+  .flow-node.action { background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.3); color: #c4b5fd; }
+  .flow-node.end    { background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.3); color: #6ee7b7; }
+  .flow-node.warn   { background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); color: #fde68a; }
+  .flow-arrow { color: var(--muted); font-size: .9rem; }
+
+  /* ─── STATUS INDICATOR ──────────────────────────────────── */
+  .status-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: .7rem;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-row.grey  { background: rgba(148,163,184,.06); border: 1px solid rgba(148,163,184,.15); }
+  .status-row.blue  { background: rgba(59,130,246,.06);  border: 1px solid rgba(59,130,246,.2); }
+  .status-row.green { background: rgba(52,211,153,.06);  border: 1px solid rgba(52,211,153,.2); }
+  .status-row.red   { background: rgba(239,68,68,.06);   border: 1px solid rgba(239,68,68,.2); }
+  .status-row.amber { background: rgba(251,191,36,.06);  border: 1px solid rgba(251,191,36,.2); }
+  .status-dot.grey  { background: #94a3b8; }
+  .status-dot.blue  { background: #60a5fa; box-shadow: 0 0 6px #60a5fa; }
+  .status-dot.green { background: #34d399; box-shadow: 0 0 6px #34d399; }
+  .status-dot.red   { background: #f87171; box-shadow: 0 0 6px #f87171; }
+  .status-dot.amber { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
+  .status-label { color: #fff; font-weight: 700; min-width: 90px; font-family: 'Orbitron', monospace; font-size: .6rem; }
+  .status-desc  { color: var(--muted); flex: 1; }
+
+  /* ─── ROLE CARD ─────────────────────────────────────────── */
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .role-card {
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid;
+  }
+  .role-card.owner { background: rgba(251,191,36,.06); border-color: rgba(251,191,36,.25); }
+  .role-card.admin { background: rgba(59,130,246,.06);  border-color: rgba(59,130,246,.25); }
+  .role-card.editor{ background: rgba(52,211,153,.06);  border-color: rgba(52,211,153,.25); }
+  .role-card .role-icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .role-card .role-name { font-family: 'Orbitron', monospace; font-size: .6rem; font-weight: 700; margin-bottom: 6px; }
+  .role-card.owner .role-name { color: #fbbf24; }
+  .role-card.admin .role-name { color: #60a5fa; }
+  .role-card.editor .role-name { color: #34d399; }
+  .role-card ul { list-style: none; font-size: .62rem; color: var(--muted); text-align: left; }
+  .role-card ul li::before { content: '▸ '; color: inherit; }
+
+  /* ─── TROUBLESHOOT TABLE ─────────────────────────────────── */
+  .trouble-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 0;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .trouble-cell {
+    padding: 9px 12px;
+    font-size: .68rem;
+    line-height: 1.4;
+  }
+  .trouble-cell:nth-child(1) {
+    background: rgba(239,68,68,.05);
+    border-right: 1px solid var(--glass-border);
+    color: #fca5a5;
+  }
+  .trouble-cell:nth-child(1) .t-label { font-family: 'Orbitron', monospace; font-size: .52rem; color: #f87171; margin-bottom: 3px; letter-spacing: .1em; }
+  .trouble-cell:nth-child(2) {
+    background: rgba(251,191,36,.05);
+    border-right: 1px solid var(--glass-border);
+    color: #fde68a;
+  }
+  .trouble-cell:nth-child(2) .t-label { font-family: 'Orbitron', monospace; font-size: .52rem; color: #fbbf24; margin-bottom: 3px; letter-spacing: .1em; }
+  .trouble-cell:nth-child(3) {
+    background: rgba(52,211,153,.05);
+    color: #a7f3d0;
+  }
+  .trouble-cell:nth-child(3) .t-label { font-family: 'Orbitron', monospace; font-size: .52rem; color: #34d399; margin-bottom: 3px; letter-spacing: .1em; }
+
+  /* ─── GENERIC UTILS ─────────────────────────────────────── */
+  p { font-size: .73rem; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+  strong { color: #fff; }
+  .accent { color: var(--cyan); }
+  .violet { color: #c4b5fd; }
+  .highlight { background: rgba(0,245,255,.08); border-radius: 4px; padding: 1px 5px; color: var(--cyan); font-family: 'Orbitron', monospace; font-size: .65em; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .mb4 { margin-bottom: 4px; }
+  .mb8 { margin-bottom: 8px; }
+  .mb12 { margin-bottom: 12px; }
+  .mb16 { margin-bottom: 16px; }
+  .mt8 { margin-top: 8px; }
+  .small { font-size: .65rem; color: var(--muted); }
+
+  /* ─── DOWNLOAD BUTTON ───────────────────────────────────── */
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(0,245,255,.15), rgba(168,85,247,.15));
+    border: 1px solid rgba(0,245,255,.4);
+    backdrop-filter: blur(10px);
+    text-decoration: none;
+    font-family: 'Orbitron', monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: #fff;
+    box-shadow: 0 0 25px rgba(0,245,255,.2), inset 0 0 15px rgba(0,245,255,.05);
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+  }
+  .download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 35px rgba(0,245,255,.35), inset 0 0 20px rgba(0,245,255,.08);
+  }
+  .download-btn .btn-icon { font-size: 1rem; }
+  .download-wrap { margin: 6px 0 24px; }
+
+  /* ─── PRINT STYLES ──────────────────────────────────────── */
+  @media print {
+    .download-wrap { display: none !important; }
+    body { background: #030712; margin: 0; }
+    .page {
+      width: 210mm; min-height: 297mm;
+      margin: 0; padding: var(--margin);
+      page-break-after: always;
+      border: none;
+      box-shadow: none;
+    }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 1 — COVER
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo-ring">📡</div>
+    <div class="cover-eyebrow">Sistema de Automatización de Canales</div>
+    <div class="cover-title">ATS CHANNEL<br>EDITOR</div>
+    <div class="cover-subtitle">Manual de Usuario Completo</div>
+    <div class="cover-badge">● VERSIÓN 4 &nbsp;&nbsp;|&nbsp;&nbsp; JUNIO 2026</div>
+    <div class="cover-divider"></div>
+
+    <div class="cover-features">
+      <div class="cover-feature-card">
+        <span class="icon">🗓️</span>
+        <strong>Parrilla Semanal</strong>
+        <span>Organiza tu programación diaria con precisión de segundos</span>
+      </div>
+      <div class="cover-feature-card">
+        <span class="icon">📺</span>
+        <strong>Automatización vMix</strong>
+        <span>Títulos, logos y anuncios que se gestionan solos en pantalla</span>
+      </div>
+      <div class="cover-feature-card">
+        <span class="icon">📢</span>
+        <strong>Notificaciones Push</strong>
+        <span>Alertas directas al teléfono de tu audiencia en tiempo real</span>
+      </div>
+      <div class="cover-feature-card">
+        <span class="icon">👥</span>
+        <strong>Trabajo en Equipo</strong>
+        <span>Invita editores y administradores a tu canal con un clic</span>
+      </div>
+      <div class="cover-feature-card">
+        <span class="icon">🎛️</span>
+        <strong>Playlist en Caliente</strong>
+        <span>Controla tu emisión al instante con el Manual Scheduler</span>
+      </div>
+      <div class="cover-feature-card">
+        <span class="icon">🖼️</span>
+        <strong>Logos y Banners Auto</strong>
+        <span>Overlays programados que se activan y apagan solos en vMix</span>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      ATS CHANNEL EDITOR v4 &nbsp;·&nbsp; GUÍA OFICIAL PARA OPERADORES &nbsp;·&nbsp; ATESUR SYSTEMS
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 2 — TABLE OF CONTENTS
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header" style="margin-bottom:20px;">
+    <div class="section-icon-wrap">📋</div>
+    <div>
+      <div class="section-title">CONTENIDO DEL MANUAL</div>
+      <div class="small" style="color:var(--muted);margin-top:2px;">Navegación rápida por secciones</div>
+    </div>
+  </div>
+
+  <div class="toc-grid">
+    <a class="toc-item">
+      <span class="toc-num">01</span>
+      <span class="toc-icon">🎯</span>
+      <span class="toc-label">¿Qué es ATS Channel Editor?<br><span class="small">Introducción y funciones principales</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">02</span>
+      <span class="toc-icon">🔑</span>
+      <span class="toc-label">Inicio de Sesión<br><span class="small">Login y gestión multi-canal</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">03</span>
+      <span class="toc-icon">🎟️</span>
+      <span class="toc-label">Planes y Licencias<br><span class="small">Suscripciones y activación de claves</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">04</span>
+      <span class="toc-icon">🗓️</span>
+      <span class="toc-label">Parrilla Semanal<br><span class="small">Crear y gestionar la programación</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">05</span>
+      <span class="toc-icon">👥</span>
+      <span class="toc-label">Módulo de Equipo<br><span class="small">Invitar colaboradores y asignar roles</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">06</span>
+      <span class="toc-icon">📺</span>
+      <span class="toc-label">vMix Titler<br><span class="small">Auto-títulos y zócalos en pantalla</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">07</span>
+      <span class="toc-icon">🖼️</span>
+      <span class="toc-label">Overlay Scheduler<br><span class="small">Logos y banners automáticos</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">08</span>
+      <span class="toc-icon">📢</span>
+      <span class="toc-label">Ad Scheduler<br><span class="small">Inserción automática de publicidad</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">09</span>
+      <span class="toc-icon">🎛️</span>
+      <span class="toc-label">Manual Scheduler<br><span class="small">Playlist en caliente y transmisión directa</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">10</span>
+      <span class="toc-icon">🔔</span>
+      <span class="toc-label">Notificaciones Push<br><span class="small">Alertas y mensajes a la audiencia</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">11</span>
+      <span class="toc-icon">⚙️</span>
+      <span class="toc-label">Panel de Ajustes<br><span class="small">Configuración de conexión y datos del canal</span></span>
+    </a>
+    <a class="toc-item">
+      <span class="toc-num">12</span>
+      <span class="toc-icon">📊</span>
+      <span class="toc-label">Monitoreo y Sincronización<br><span class="small">Red, logs y operación multi-estación</span></span>
+    </a>
+    <a class="toc-item" style="grid-column: span 2;">
+      <span class="toc-num">13</span>
+      <span class="toc-icon">🛠️</span>
+      <span class="toc-label">Solución de Problemas<br><span class="small">Errores frecuentes y cómo resolverlos rápidamente</span></span>
+    </a>
+  </div>
+
+  <div class="info-box tip" style="margin-top:16px;">
+    <span class="box-icon">💡</span>
+    <div><strong>Consejo de uso:</strong> Si eres nuevo en ATS Channel Editor, te recomendamos leer las secciones 1 a 4 primero. Luego avanza a los módulos específicos que usarás en tu flujo de trabajo diario.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">02</span>
+    <span>TABLA DE CONTENIDOS</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 3 — SECCIONES 1 & 2
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <!-- SECCIÓN 1 -->
+  <div class="section-header">
+    <div class="section-icon-wrap">🎯</div>
+    <div class="section-title">¿QUÉ ES ATS CHANNEL EDITOR?</div>
+    <div class="section-tag">SECCIÓN 01</div>
+  </div>
+
+  <p><strong>ATS Channel Editor</strong> es el software que actúa como el <span class="accent">cerebro organizativo</span> de tu canal de televisión. Su misión es automatizar todo el trabajo repetitivo de la transmisión para que tu equipo se enfoque en crear contenido, no en presionar botones.</p>
+
+  <div class="three-col mb12">
+    <div class="card">
+      <div class="card-title">📅 Planificación Visual</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Diseña qué programas se emiten cada día y a qué hora exacta, desde una pantalla clara y ordenada.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🤖 Automatización Total</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Se conecta con vMix para cambiar títulos, logos y comerciales de forma automática, sin intervención manual.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 Audiencia Conectada</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Envía alertas al celular de tus espectadores y mantén el logotipo del canal siempre presente en pantalla.</p>
+    </div>
+  </div>
+
+  <div class="info-box tip">
+    <span class="box-icon">📡</span>
+    <div><strong>¿Qué es vMix?</strong> Es el software profesional de mezcla de video con el que produces tu señal en vivo. ATS Channel Editor se conecta a él para darle instrucciones automáticas y que tú no tengas que hacerlo manualmente todo el día.</div>
+  </div>
+
+  <!-- SECCIÓN 2 -->
+  <div class="section-header" style="margin-top:18px;">
+    <div class="section-icon-wrap">🔑</div>
+    <div class="section-title">INICIO DE SESIÓN</div>
+    <div class="section-tag">SECCIÓN 02</div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card-title mb8">Cómo ingresar al sistema</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Abre la aplicación en tu computadora.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Ingresa tu <strong>correo electrónico</strong> y <strong>contraseña</strong>.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Presiona <span class="highlight">INICIAR SESIÓN</span>. El sistema verificará tus datos de forma segura.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Si tienes acceso a varios canales, el software te los mostrará para que elijas cuál abrir.</span></li>
+      </ol>
+    </div>
+    <div>
+      <div class="card-title mb8">Gestión multi-canal</div>
+      <div class="card" style="margin-bottom:8px;">
+        <p style="font-size:.68rem;margin-bottom:4px;">¿Trabajas en más de un canal? ATS lo maneja automáticamente. Puedes alternar entre canales desde la <strong>esquina superior</strong> de la pantalla.</p>
+      </div>
+      <div class="info-box tip" style="margin-bottom:0;">
+        <span class="box-icon">⚡</span>
+        <div style="font-size:.65rem;">Si fuiste invitado a un canal de pago de tu empresa, el sistema <strong>entrará directo a ese canal</strong> para que no tengas problemas de acceso.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">03</span>
+    <span>INTRODUCCIÓN E INICIO DE SESIÓN</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 4 — SECCIÓN 3: PLANES Y LICENCIAS
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header">
+    <div class="section-icon-wrap">🎟️</div>
+    <div class="section-title">PLANES Y LICENCIAS</div>
+    <div class="section-tag">SECCIÓN 03</div>
+  </div>
+
+  <p style="margin-bottom:10px;">Para usar ATS Channel Editor necesitas tener una <strong>suscripción activa</strong>. Tu plan determina cuántos programas puedes agendar, cuántos anuncios puedes configurar y cuántas personas pueden trabajar en tu canal.</p>
+
+  <div class="card-title mb8">Planes mensuales disponibles</div>
+
+  <table class="glass-table">
+    <thead>
+      <tr>
+        <th>Característica</th>
+        <th>Basic $15/mes</th>
+        <th>Pro $39/mes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Películas en catálogo</td><td>5</td><td>100</td></tr>
+      <tr><td>Programas semanales</td><td>5</td><td>100</td></tr>
+      <tr><td>Tandas publicitarias</td><td>1</td><td>15</td></tr>
+      <tr><td>Reglas de overlays</td><td>1</td><td>5</td></tr>
+      <tr><td>Computadoras simultáneas</td><td>1</td><td>2</td></tr>
+      <tr><td>Playlist manual (caliente)</td><td>1 lista</td><td><span class="check">✓</span> Desbloqueado</td></tr>
+      <tr><td>Soporte técnico</td><td>Estándar</td><td>Prioritario</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn mb12">
+    <span class="box-icon">🆓</span>
+    <div><strong>¿Qué es el Plan Free?</strong> No es un plan que se compre ni esté disponible para el público en general. Es el estado que recibe automáticamente cualquier <strong>canal adicional</strong> que crees desde una cuenta que ya tiene un plan de pago activo (por ejemplo, con Lifetime Pro puedes manejar hasta 2 canales). Ese canal nuevo nace con límites básicos: 5 películas, 5 programas, 1 tanda de anuncios, 1 regla de overlay y sin Manual Scheduler, hasta que actives una licencia propia para él.</div>
+  </div>
+
+  <div class="info-box tip mb12">
+    <span class="box-icon">💬</span>
+    <div><strong>Otras formas de pago:</strong> Si prefieres pagar por <strong>Trimestre, Semestre, Año</strong>, o adquirir una licencia <strong>Vitalicia (Lifetime)</strong> de pago único, comunícate con nuestro canal de soporte técnico para conocer costos y condiciones de cada modalidad.</div>
+  </div>
+
+  <div class="card-title mb8">Cómo activar una licencia</div>
+  <ol class="steps">
+    <li><span class="step-num">1</span><span class="step-text">Obtén tu <strong>clave de licencia</strong> con soporte técnico (ejemplo: <span class="highlight">PRO-A93D8B2C</span>).</span></li>
+    <li><span class="step-num">2</span><span class="step-text">Cuando aparezca la pantalla de activación, ingresa el código en el campo <strong>"Clave de Licencia"</strong>.</span></li>
+    <li><span class="step-num">3</span><span class="step-text">Presiona <span class="highlight">ACTIVAR LICENCIA</span>. Tu plan se actualiza al instante sin perder tu programación.</span></li>
+  </ol>
+
+  <div class="info-box warn" style="margin-top:10px;">
+    <span class="box-icon">⚠️</span>
+    <div><strong>Período de prueba único:</strong> El código de prueba "Pro Trial" solo puede usarse <strong>una vez por computadora</strong>. El sistema recuerda qué equipos ya lo han utilizado, así que no hay forma de volver a activarlo en esa máquina.</div>
+  </div>
+
+  <div class="info-box danger" style="margin-top:8px;">
+    <span class="box-icon">🔒</span>
+    <div><strong>Funciones bloqueadas automáticamente:</strong> Si el mantenimiento de tu app móvil vence, verás un candado 🔒 sobre las secciones de Notificaciones Push, Mensajería y Publicidad Web. Renueva el mantenimiento con soporte para restaurar el acceso.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">04</span>
+    <span>PLANES Y LICENCIAS</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 5 — SECCIÓN 4: PARRILLA SEMANAL
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header">
+    <div class="section-icon-wrap">🗓️</div>
+    <div class="section-title">PARRILLA SEMANAL</div>
+    <div class="section-tag">SECCIÓN 04</div>
+  </div>
+
+  <p class="mb8">Esta es la <strong>pantalla principal</strong> del software. Aquí diseñas qué programas o películas se emiten cada día de la semana y a qué hora exacta.</p>
+
+  <div class="two-col mb12">
+    <div class="card">
+      <div class="card-title">Vista Grilla</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Muestra la programación en columnas por día de la semana. Perfecta para ver toda la semana de un vistazo.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Vista Timeline</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Muestra una línea de tiempo horizontal. Ideal para detectar si dos programas se solapan o quedan brechas vacías.</p>
+    </div>
+  </div>
+
+  <div class="card-title mb8">Cómo agregar un nuevo programa</div>
+  <ol class="steps mb12">
+    <li><span class="step-num">1</span><span class="step-text">Presiona el botón azul <span class="highlight">+ NUEVO PROGRAMA</span> (esquina superior derecha) o haz doble clic en cualquier espacio vacío de la grilla.</span></li>
+    <li><span class="step-num">2</span><span class="step-text">Escribe el <strong>título</strong> del programa. Si es una película o serie, haz clic en el ícono 🎬 para buscarla en internet y <strong>rellenar todos los datos automáticamente</strong> (sinopsis, póster, año).</span></li>
+    <li><span class="step-num">3</span><span class="step-text">Selecciona la <strong>categoría</strong> correcta: Cine, Serie, Noticiero, Deportes, Música, Documental, Infantil, Matutinas o Entretenimiento.</span></li>
+    <li><span class="step-num">4</span><span class="step-text">Marca los <strong>días de la semana</strong> en que se emite y define la <strong>hora de inicio y fin</strong>.</span></li>
+    <li><span class="step-num">5</span><span class="step-text">Presiona <span class="highlight">GUARDAR</span>. El programa aparece en la grilla de inmediato.</span></li>
+  </ol>
+
+  <div class="card-title mb8">Opciones especiales al crear un programa</div>
+  <div class="two-col mb10">
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">⏰ Hora Estricta / Fija</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Marca esta opción para que el programa <strong>nunca se mueva de su horario</strong> (por ejemplo, un noticiero de las 13:00). Si hay una película ocupando ese espacio, el sistema la divide automáticamente para dar paso al noticiero y luego la continúa.</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">🖐️ Modo Manual (Bypass)</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Si marcas esta opción, el motor automático <strong>omitirá completamente este programa</strong> durante la transmisión. El operador en vMix controlará ese bloque de forma 100% manual.</p>
+    </div>
+  </div>
+
+  <div class="info-box tip" style="margin-top:10px;">
+    <span class="box-icon">✨</span>
+    <div><strong>Split & Ripple (Magia automática):</strong> Cuando un noticiero de hora fija choca con una película ya programada, el sistema <strong>divide la película en dos partes</strong>, la primera termina justo antes del noticiero y la segunda continúa donde quedó, todo sin que muevas nada a mano.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">05</span>
+    <span>PARRILLA SEMANAL</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 6 — SECCIONES 5 & 6
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <!-- SECCIÓN 5 -->
+  <div class="section-header">
+    <div class="section-icon-wrap">👥</div>
+    <div class="section-title">MÓDULO DE EQUIPO Y MIEMBROS</div>
+    <div class="section-tag">SECCIÓN 05</div>
+  </div>
+
+  <p class="mb10">Desde <strong>Ajustes → Equipo y Miembros</strong> puedes invitar a tu personal para que trabajen en el canal sin que tengas que compartir tu contraseña de administrador.</p>
+
+  <div class="role-grid">
+    <div class="role-card owner">
+      <div class="role-icon">👑</div>
+      <div class="role-name">PROPIETARIO</div>
+      <ul>
+        <li>Control total del canal</li>
+        <li>Puede eliminar a cualquier miembro</li>
+        <li>Acceso a todos los módulos</li>
+      </ul>
+    </div>
+    <div class="role-card admin">
+      <div class="role-icon">🛡️</div>
+      <div class="role-name">ADMINISTRADOR</div>
+      <ul>
+        <li>Gestiona editores y viewers</li>
+        <li>No puede eliminar otros admins</li>
+        <li>Acceso a configuración general</li>
+      </ul>
+    </div>
+    <div class="role-card editor">
+      <div class="role-icon">✏️</div>
+      <div class="role-name">EDITOR</div>
+      <ul>
+        <li>Edita la parrilla semanal</li>
+        <li>Configura overlays y ads</li>
+        <li>Sin acceso a gestión de equipo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card-title mb8 mt8">Cómo invitar a un colaborador</div>
+  <ol class="steps mb10">
+    <li><span class="step-num">1</span><span class="step-text">Ve a <strong>Ajustes → Equipo y Miembros</strong>.</span></li>
+    <li><span class="step-num">2</span><span class="step-text">Presiona el botón <span class="highlight">+ INVITAR MIEMBRO</span>.</span></li>
+    <li><span class="step-num">3</span><span class="step-text">Ingresa el <strong>correo electrónico</strong> del colaborador (en minúsculas) y selecciona su <strong>rol</strong>.</span></li>
+    <li><span class="step-num">4</span><span class="step-text">Presiona <span class="highlight">ENVIAR INVITACIÓN</span>. Si el colaborador ya tiene cuenta, se une al instante. Si no, se unirá automáticamente cuando se registre con ese mismo correo.</span></li>
+  </ol>
+
+  <!-- SECCIÓN 6 -->
+  <div class="section-header" style="margin-top:12px;">
+    <div class="section-icon-wrap">📺</div>
+    <div class="section-title">vMIX TITLER — AUTO-TITULADOR</div>
+    <div class="section-tag">SECCIÓN 06</div>
+  </div>
+
+  <p class="mb8">El <strong>Auto-Titulador</strong> actualiza de forma automática los zócalos y títulos que aparecen en la parte inferior de tu pantalla de transmisión, mostrando el nombre y datos del programa actual sin que nadie tenga que escribirlos a mano.</p>
+
+  <div class="two-col mb8">
+    <div class="card">
+      <div class="card-title">Actualización automática</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Cada vez que cambia el programa al aire, el titulador detecta el cambio y actualiza el zócalo en vMix con el nuevo título, descripción e imagen del show.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Botones 1 – 8 (Disparo manual)</div>
+      <p style="font-size:.68rem;margin-bottom:0;">Hay 8 botones numerados. Al presionar cualquiera, el título aparece en pantalla <strong>al instante</strong>. Úsalos durante transmisiones especiales para recordar a la audiencia qué están viendo.</p>
+    </div>
+  </div>
+
+  <div class="info-box tip">
+    <span class="box-icon">🎯</span>
+    <div><strong>Configuración clave:</strong> Para que funcione, el nombre del "Input" que escribas en el editor debe ser <strong>exactamente igual</strong> al nombre de la plantilla en vMix (incluyendo mayúsculas y minúsculas).</div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">06</span>
+    <span>EQUIPO Y AUTO-TITULADOR</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 7 — SECCIONES 7 & 8
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <!-- SECCIÓN 7 -->
+  <div class="section-header">
+    <div class="section-icon-wrap">🖼️</div>
+    <div class="section-title">OVERLAY SCHEDULER — LOGOS Y BANNERS</div>
+    <div class="section-tag">SECCIÓN 07</div>
+  </div>
+
+  <p class="mb10">El <strong>Overlay Scheduler</strong> controla cuándo aparece y desaparece el logotipo de tu canal y cualquier banner en pantalla, <strong>de forma completamente automática</strong>, sin que nadie tenga que encenderlos o apagarlos manualmente.</p>
+
+  <div class="two-col mb12">
+    <div>
+      <div class="card-title mb8">🔵 Modo Smart Logo (Logo Inteligente)</div>
+      <p style="font-size:.68rem;margin-bottom:8px;">El sistema revisa cada 5 segundos qué está transmitiendo vMix:</p>
+      <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="flow-node start">Programa normal (Cine/Serie)</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node end">Logo: ON ✓</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="flow-node start">Tanda comercial</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node warn">Logo: OFF ✗</div>
+        </div>
+      </div>
+      <p style="font-size:.65rem;color:var(--muted);margin-top:6px;">Esto protege tu imagen: el logo no aparece encima de los anuncios de tus clientes.</p>
+    </div>
+    <div>
+      <div class="card-title mb8">🟣 Modo Periódico (Intervalos)</div>
+      <p style="font-size:.68rem;margin-bottom:8px;">Perfecto para banners informativos o del clima que deben aparecer de forma intermitente durante el día.</p>
+      <div class="card" style="margin-bottom:8px;">
+        <p style="font-size:.65rem;margin-bottom:0;">📍 <strong>Ejemplo:</strong> Configura un banner para que aparezca cada <strong>15 minutos</strong> durante <strong>10 segundos</strong>, de lunes a viernes entre las 8:00 y las 20:00.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box tip mb12">
+    <span class="box-icon">⚙️</span>
+    <div><strong>Acción del overlay:</strong> Al crear una regla puedes elegir tres modos: <strong>In</strong> (encender), <strong>Out</strong> (apagar) o <strong>Toggle</strong> (invertir el estado actual). Toggle es útil para alternar logos con un solo comando.</div>
+  </div>
+
+  <!-- SECCIÓN 8 -->
+  <div class="section-header" style="margin-top:4px;">
+    <div class="section-icon-wrap">📢</div>
+    <div class="section-title">AD SCHEDULER — PUBLICIDAD AUTOMÁTICA</div>
+    <div class="section-tag">SECCIÓN 08</div>
+  </div>
+
+  <p class="mb10">El <strong>Ad Scheduler</strong> inserta tus bloques de comerciales en horarios exactos sin que nadie tenga que hacerlo a mano. Una vez configurado, los anuncios entran solos y la programación continúa perfectamente.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="card-title mb8">Crear una tanda publicitaria</div>
+      <ol class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Asigna un nombre descriptivo (ej. <em>Tanda Mediodía</em>).</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Indica el nombre del playlist de anuncios en vMix.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Selecciona los días activos y el tipo de transición (Corte, Fade o Merge).</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Presiona <span class="highlight">+ Add Time</span> para añadir cada horario del día en que debe entrar.</span></li>
+      </ol>
+    </div>
+    <div>
+      <div class="card-title mb8">💡 Efecto Ripple (Onda en Cascada)</div>
+      <div class="card">
+        <p style="font-size:.68rem;margin-bottom:4px;">Cuando una tanda de 2 minutos interrumpe la programación regular a las 14:00, el sistema <strong>empuja automáticamente todos los programas siguientes 2 minutos hacia adelante</strong> para que ningún contenido pierda tiempo de pantalla.</p>
+        <p style="font-size:.65rem;color:var(--muted);margin-bottom:0;">Sin esta función, habría que recalcular todos los horarios del día a mano cada vez que entra un comercial.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">07</span>
+    <span>OVERLAYS Y PUBLICIDAD AUTOMÁTICA</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 8 — SECCIÓN 9: MANUAL SCHEDULER
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header">
+    <div class="section-icon-wrap">🎛️</div>
+    <div class="section-title">MANUAL SCHEDULER — PLAYLIST EN CALIENTE</div>
+    <div class="section-tag">SECCIÓN 09</div>
+  </div>
+
+  <p class="mb10">El <strong>Manual Scheduler</strong> es tu mesa de control en vivo. A diferencia de la parrilla semanal (que planifica a largo plazo), aquí encadenas videos uno tras otro para una transmisión especial o evento en directo, con precisión de segundos. <em>Solo disponible en pantalla de escritorio.</em></p>
+
+  <div class="card-title mb8">Estados del reloj de transmisión</div>
+  <div class="status-row grey"><div class="status-dot grey"></div><span class="status-label">IDLE</span><span class="status-desc">En reposo. Muestra la hora actual de tu computadora.</span></div>
+  <div class="status-row blue"><div class="status-dot blue"></div><span class="status-label">WAITING FOR</span><span class="status-desc">Activo, en cuenta regresiva esperando el primer video.</span></div>
+  <div class="status-row green"><div class="status-dot green"></div><span class="status-label">NOW PLAYING</span><span class="status-desc">Video regular en transmisión. Muestra el tiempo restante.</span></div>
+  <div class="status-row red"><div class="status-dot red"></div><span class="status-label">COMMERCIAL</span><span class="status-desc">Un comercial está al aire. Cuenta regresiva en rojo.</span></div>
+  <div class="status-row amber mb12"><div class="status-dot amber"></div><span class="status-label">SILENCE FILLER</span><span class="status-desc">Cola vacía. Emitiendo video de respaldo para no dejar pantalla negra.</span></div>
+
+  <div class="card-title mb8">Controles principales del panel</div>
+  <div class="three-col mb10">
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title" style="font-size:.65rem;">LOAD / APPEND / SAVE</div>
+      <p style="font-size:.65rem;margin-bottom:0;">Carga, añade al final o guarda tu lista de reproducción como archivo <strong>.json</strong> para reutilizarla.</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title" style="font-size:.65rem;">PUSH / STOP SCHEDULE</div>
+      <p style="font-size:.65rem;margin-bottom:0;"><strong>PUSH</strong> inicia la transmisión automática. <strong>STOP</strong> la detiene al instante de forma segura.</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title" style="font-size:.65rem;">SAVE .XLS</div>
+      <p style="font-size:.65rem;margin-bottom:0;">Exporta la lista como hoja de cálculo Excel para presentar como <strong>reporte oficial a auspiciadores</strong>.</p>
+    </div>
+  </div>
+
+  <div class="card-title mb8">Ajustes finos de cada video en la lista</div>
+  <div class="two-col">
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title" style="font-size:.65rem;">Punto de entrada (Mark In)</div>
+      <p style="font-size:.65rem;margin-bottom:4px;">Define desde qué segundo inicia el video. Con los botones rápidos <strong>½ · ⅓ · ¼</strong> puedes recortarlo al instante.</p>
+      <div class="card-title" style="font-size:.65rem;">SPLIT BY PARTS / SPLIT BY INT</div>
+      <p style="font-size:.65rem;margin-bottom:0;">Divide un video largo en partes iguales o en fragmentos de tiempo exacto para insertar anuncios entre ellos.</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title" style="font-size:.65rem;">FILLERS de emergencia</div>
+      <p style="font-size:.65rem;margin-bottom:4px;"><strong>Missing File:</strong> Si vMix no encuentra un video, reproduce este archivo de respaldo automáticamente.</p>
+      <p style="font-size:.65rem;margin-bottom:0;"><strong>Silence Filler:</strong> Cuando la cola se vacía, este video en loop evita que tu señal quede en negro.</p>
+    </div>
+  </div>
+
+  <div class="info-box warn" style="margin-top:10px;">
+    <span class="box-icon">🖥️</span>
+    <div><strong>Solo en escritorio:</strong> El Manual Scheduler no está disponible en tablets ni móviles. Si achicas la ventana por debajo de 1200 píxeles de ancho, el sistema te redirige automáticamente a la parrilla semanal para proteger la estabilidad de la transmisión.</div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">08</span>
+    <span>MANUAL SCHEDULER</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 9 — SECCIONES 10 & 11
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <!-- SECCIÓN 10 -->
+  <div class="section-header">
+    <div class="section-icon-wrap">🔔</div>
+    <div class="section-title">NOTIFICACIONES PUSH Y MENSAJERÍA</div>
+    <div class="section-tag">SECCIÓN 10</div>
+  </div>
+
+  <p class="mb8">Llega directamente al teléfono de tu audiencia con alertas personalizadas. Esta función requiere que tu canal tenga la <strong>aplicación móvil activa y configurada</strong>.</p>
+
+  <div class="two-col mb10">
+    <div>
+      <div class="card-title mb8">📲 Notificaciones Push (Alertas)</div>
+      <p style="font-size:.68rem;margin-bottom:8px;">Son las alertas que vibran y aparecen en el centro de notificaciones del teléfono, incluso cuando la app está cerrada.</p>
+      <ol class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Escribe un <strong>título</strong> corto y llamativo.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Escribe el <strong>mensaje</strong> detallado.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Opcionalmente sube una <strong>imagen</strong> promocional.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Presiona <span class="highlight">ENVIAR AHORA</span> para llegar a todos los celulares de tus usuarios.</span></li>
+      </ol>
+    </div>
+    <div>
+      <div class="card-title mb8">💬 Mensajería In-App</div>
+      <p style="font-size:.68rem;margin-bottom:8px;">Mensajes que aparecen dentro de la app de tu canal cuando el usuario la abre.</p>
+      <div class="card mb8">
+        <div class="card-title" style="font-size:.65rem;">Modo Banner</div>
+        <p style="font-size:.65rem;margin-bottom:0;">Barra discreta en la parte superior de la pantalla. No interrumpe la visualización.</p>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="font-size:.65rem;">Modo Modal (Popup)</div>
+        <p style="font-size:.65rem;margin-bottom:0;">Ventana a pantalla completa que el usuario debe cerrar. <strong>100% de efectividad de lectura</strong>, ideal para anuncios importantes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box tip mb12">
+    <span class="box-icon">🚀</span>
+    <div><strong>Notificar desde la parrilla:</strong> Abre cualquier programa ya creado, toca el ícono de campana 🔔 y elige entre las plantillas <em>"Ya comienza"</em> o <em>"No te lo pierdas"</em>. El sistema rellena el mensaje automáticamente con los datos del show.</div>
+  </div>
+
+  <!-- SECCIÓN 11 -->
+  <div class="section-header" style="margin-top:4px;">
+    <div class="section-icon-wrap">⚙️</div>
+    <div class="section-title">PANEL DE AJUSTES DEL CANAL</div>
+    <div class="section-tag">SECCIÓN 11</div>
+  </div>
+
+  <p class="mb8">Aquí configuras la conexión entre ATS Channel Editor y tu software de producción vMix, y los datos públicos de tu canal.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="card-title mb8">Conexión con vMix</div>
+      <div class="card">
+        <p style="font-size:.68rem;margin-bottom:6px;"><strong>vMix IP:</strong> Si vMix está en la misma computadora, escribe <span class="highlight">localhost</span>. Si está en otra PC de la red, escribe su dirección IP.</p>
+        <p style="font-size:.68rem;margin-bottom:6px;"><strong>Puerto:</strong> Usa el valor por defecto <span class="highlight">8088</span> a menos que hayas cambiado la configuración en vMix.</p>
+        <p style="font-size:.68rem;margin-bottom:0;"><strong>Botón Test Connection:</strong> Presiónalo para verificar que todo esté conectado. Si se pone verde, ¡listo para transmitir!</p>
+      </div>
+    </div>
+    <div>
+      <div class="card-title mb8">Datos del canal</div>
+      <div class="card">
+        <p style="font-size:.68rem;margin-bottom:6px;"><strong>Stream URL:</strong> La dirección de tu señal en vivo (RTMP/M3U8) que usará la app móvil para reproducir tu canal.</p>
+        <p style="font-size:.68rem;margin-bottom:6px;"><strong>Redes sociales:</strong> Al ingresar los enlaces de Facebook, YouTube, WhatsApp, etc., esos botones aparecerán automáticamente en la app de tu canal.</p>
+        <p style="font-size:.68rem;margin-bottom:0;"><strong>WordPress URL:</strong> Si tienes un sitio de noticias, conéctalo para que los artículos aparezcan en la app móvil.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">09</span>
+    <span>NOTIFICACIONES Y AJUSTES</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 10 — SECCIÓN 12: MONITOREO
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header">
+    <div class="section-icon-wrap">📊</div>
+    <div class="section-title">MONITOREO Y SINCRONIZACIÓN</div>
+    <div class="section-tag">SECCIÓN 12</div>
+  </div>
+
+  <div class="two-col mb12">
+    <div>
+      <div class="card-title mb8">🛡️ Protección contra micro-cortes de red</div>
+      <p style="font-size:.68rem;margin-bottom:6px;">El editor revisa la conexión con vMix cada segundo. Si la red falla momentáneamente, <strong>no muestra alerta inmediatamente</strong>. Espera 3 fallas consecutivas antes de reportar "VMIX OFFLINE".</p>
+      <p style="font-size:.65rem;color:var(--muted);">Esto evita que el indicador parpadee innecesariamente por micro-cortes de menos de 3 segundos, lo cual distraería al operador en plena transmisión.</p>
+    </div>
+    <div>
+      <div class="card-title mb8">🔄 Botón de actualización manual</div>
+      <p style="font-size:.68rem;margin-bottom:6px;">Todos los módulos principales tienen un <strong>botón de refresco</strong>. Al pulsarlo, el sistema recarga los datos del servidor y muestra una confirmación verde en pantalla.</p>
+      <p style="font-size:.65rem;color:var(--muted);">Úsalo si sospechas que la pantalla no refleja los últimos cambios que tú u otro colaborador hicieron desde otro dispositivo.</p>
+    </div>
+  </div>
+
+  <div class="card-title mb8">💻 ¿Desde qué computadora debo trabajar?</div>
+  <div class="two-col mb12">
+    <div class="card" style="border-color:rgba(0,245,255,.2);margin-bottom:0;">
+      <div class="card-title">Computadora de Transmisión (LOCAL)</div>
+      <p style="font-size:.68rem;margin-bottom:4px;">Es la PC donde vMix está instalado y corriendo. <strong>Solo desde aquí</strong> puedes:</p>
+      <ul style="list-style:none;font-size:.65rem;color:#a5f3fc;">
+        <li>✓ Buscar archivos de video en los discos</li>
+        <li>✓ Inyectar clips directamente a vMix</li>
+        <li>✓ Controlar la transmisión en vivo</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(168,85,247,.2);margin-bottom:0;">
+      <div class="card-title">Computadora Remota (OFICINA / LAPTOP)</div>
+      <p style="font-size:.68rem;margin-bottom:4px;">Desde cualquier otra PC con internet puedes hacer todo el trabajo de planificación:</p>
+      <ul style="list-style:none;font-size:.65rem;color:#c4b5fd;">
+        <li>✓ Diseñar y editar la parrilla semanal</li>
+        <li>✓ Programar overlays, banners y publicidades</li>
+        <li>✗ No puede controlar vMix en vivo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box warn mb10">
+    <span class="box-icon">⚠️</span>
+    <div><strong>Regla de oro:</strong> Las búsquedas de archivos y el control en vivo de vMix <strong>SOLO funcionan en la computadora donde vMix está instalado</strong>. Intentarlo desde una PC remota no producirá resultados útiles.</div>
+  </div>
+
+  <div class="card-title mb8">🗂️ Registros automáticos (Logs)</div>
+  <div class="card">
+    <p style="font-size:.68rem;margin-bottom:4px;">El editor guarda un registro detallado de todas las acciones en la carpeta <span class="highlight">Documents/Channel Editor Logs</span> de tu computadora.</p>
+    <p style="font-size:.68rem;margin-bottom:0;">Para proteger el espacio en disco, los archivos de registro <strong>se eliminan automáticamente después de 7 días</strong>. Si necesitas conservar registros históricos, copia manualmente esa carpeta una vez por semana.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">10</span>
+    <span>MONITOREO Y SINCRONIZACIÓN</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 11 — SECCIÓN 13: SOLUCIÓN DE PROBLEMAS
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-title">ATS CHANNEL EDITOR v4 — MANUAL DE USUARIO</span>
+    <span class="page-header-logo">ATESUR SYSTEMS</span>
+  </div>
+
+  <div class="section-header">
+    <div class="section-icon-wrap">🛠️</div>
+    <div class="section-title">SOLUCIÓN DE PROBLEMAS</div>
+    <div class="section-tag">SECCIÓN 13</div>
+  </div>
+
+  <p class="mb12">Aquí encontrarás las soluciones a los inconvenientes más comunes. Encuentra tu problema en la columna roja y sigue la solución en la columna verde.</p>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>El login dice "Error de conexión" y no puedo entrar.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>Sin internet o servidores en mantenimiento.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Verifica que puedas navegar en internet normalmente. Espera unos minutos y vuelve a intentarlo.</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>Presiono los botones de overlay 1–8 y no pasa nada en vMix.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>La IP/puerto es incorrecto o la API de vMix está desactivada.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Activa la API en vMix → Settings → Web Controller. Copia la IP que te da vMix y pégala en Ajustes del Editor. Presiona "Test Connection".</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>El logotipo automático (Smart Logo) nunca aparece en pantalla.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>El programa tiene una categoría incorrecta o el nombre del input no coincide.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Verifica que la categoría sea "Cine" o "Serie". Comprueba que el nombre del Input en el Editor y en vMix sea idéntico letra por letra.</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>Un colaborador dice que está bloqueado al iniciar sesión.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>Su cuenta quedó asociada a un canal inactivo por error.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Pídele que cierre sesión y vuelva a ingresar. El sistema detectará su membresía y lo enviará al canal correcto de forma automática.</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>Mensaje: "Dispositivo ya utilizó un periodo de prueba".</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>Esa computadora ya consumió el trial anteriormente.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Adquiere una licencia de pago (Pro o Lifetime) a través de soporte técnico para esa máquina.</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>El Manual Scheduler no aparece en mi teléfono o tablet.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>Por diseño, esta herramienta es exclusiva de escritorio.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Usa una computadora de escritorio. Esta pantalla no está disponible en pantallas pequeñas.</div>
+  </div>
+
+  <div class="trouble-item">
+    <div class="trouble-cell"><div class="t-label">EL PROBLEMA</div>Mis archivos de logs de hace dos semanas desaparecieron.</div>
+    <div class="trouble-cell"><div class="t-label">POR QUÉ</div>La limpieza automática elimina logs de más de 7 días.</div>
+    <div class="trouble-cell"><div class="t-label">LA SOLUCIÓN</div>Es normal. Para conservarlos, copia manualmente la carpeta <span style="color:#a7f3d0;font-family:'Orbitron',monospace;font-size:.62em;">Documents/Channel Editor Logs</span> cada semana.</div>
+  </div>
+
+  <div class="page-footer" style="margin-top:12px;">
+    <span>ATS CHANNEL EDITOR v4</span>
+    <span class="page-num">11</span>
+    <span>SOLUCIÓN DE PROBLEMAS</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 12 — BACK COVER
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover" style="gap:0;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:0;">
+      <div style="font-size:3rem;margin-bottom:16px;">📡</div>
+      <div class="cover-eyebrow">¿Necesitas ayuda adicional?</div>
+      <div style="font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:12px;">SOPORTE TÉCNICO</div>
+      <div class="cover-divider"></div>
+
+      <div class="card" style="max-width:360px; text-align:left; margin-bottom:20px;">
+        <div class="card-title">Antes de contactar a soporte…</div>
+        <ol class="steps">
+          <li><span class="step-num">1</span><span class="step-text">Consulta la sección <strong>13 — Solución de Problemas</strong> de este manual.</span></li>
+          <li><span class="step-num">2</span><span class="step-text">Verifica que tu conexión a internet funcione correctamente.</span></li>
+          <li><span class="step-num">3</span><span class="step-text">Revisa que vMix esté abierto y con su API activada (si el problema involucra automatización).</span></li>
+        </ol>
+      </div>
+
+      <div class="info-box tip" style="max-width:360px;text-align:left;margin-bottom:8px;">
+        <span class="box-icon">📩</span>
+        <div>Si el problema persiste, contacta al <strong>Administrador del Sistema</strong> o al equipo de soporte técnico oficial de Atesur con una descripción detallada del error y una captura de pantalla si es posible.</div>
+      </div>
+
+      <div class="download-wrap">
+        <a class="download-btn" href="https://www.google.com" target="_blank" rel="noopener noreferrer">
+          <span class="btn-icon">⬇️</span> DESCARGAR RECURSO
+        </a>
+      </div>
+
+      <div class="cover-divider"></div>
+      <div style="font-family:'Orbitron',monospace; font-size:.6rem; letter-spacing:.2em; color:rgba(148,163,184,.5); margin-top:20px;">
+        MANUAL ACTUALIZADO A v4 &nbsp;·&nbsp; JUNIO 2026<br>
+        ATESUR SYSTEMS &nbsp;·&nbsp; TODOS LOS DERECHOS RESERVADOS
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
